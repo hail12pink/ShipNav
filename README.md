@@ -32,5 +32,3 @@ However, for full functionality, it requires the following:
 
 ## Contributing
 To contribute, open a [pull request](https://github.com/hail12pink/ShipNav/pulls)
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
