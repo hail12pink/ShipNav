@@ -59,7 +59,7 @@ Settings.Attachments = {
 ```
 
 ### Configuring/Triggering
-Attachments can be configured/triggered by saying the prefix, followed by their names into chat. (The default prefix is `;`)
+Attachments can be configured/triggered by saying the prefix, followed by their names into chat. (The default prefix is `-`)
 
 #### Examples:
 * `"-Headlights true"`
