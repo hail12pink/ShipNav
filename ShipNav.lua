@@ -1,3 +1,38 @@
+--[[
+    ShipNav.lua
+    By: Hail12Pink
+    Dependencies:
+        Screen
+        Microphone
+    Information:
+        The purpose of this file is to provide an easy-to-use interface for controlling a ship
+]]
+
+
+--[[
+place items on ports and set their names to what you want them to be configured by
+if multiple items of the same class are on the same port, there will be issues
+
+SUPPORTED CLASSES:
+    Switch [any]
+    Polysilicon
+    Explosive [any]
+]]--
+
+local Settings = {}
+
+Settings.RadarUpdateTime = 0 -- how often the radar is updated in seconds
+Settings.MapSize = 1800 -- the size of the map in studs; note that players over 2000 studs away cannot be seen; setting this to values higher than 2000 will cause issues with the map
+
+local Switches = {
+	Headlights = GetPartFromPort(2, "Switch");
+	GyroSwitch = GetPartFromPort(3, "Switch");
+}
+
+
+--// [ END OF  CONFIGURATION ] \\--
+
+
 local Modules = {
     HyperDrive = GetPartFromPort(1, "HyperDrive") or false;
     Speaker = GetPartFromPort(1, "Speaker") or false;
@@ -8,42 +43,6 @@ local Modules = {
 	Gyro = GetPartFromPort(1, "Gyro") or false;
 	Anchor = GetPartFromPort(1, "Anchor") or false;
 }
-
-
-
-
-
---// [CUSTOM CONFIGURATION] \\--
-
---[[
-
-    place items on ports and set their names to what you want them to be configured by
-    if multiple items of the same class are on the same port, there will be issues
-
-    SUPPORTED:
-        Switch
-        TriggerSwitch
-        Polysilicon
-        Explosive
-        EnergyBomb
-        Warhead
-]]
-
-local Switches = {
-	Headlights = GetPartFromPort(2, "Switch");
-	GyroSwitch = GetPartFromPort(3, "Switch");
-}
-
-local Settings = {}
-Settings.RadarUpdateTime = 0 -- how often the radar is updated in seconds
-Settings.MapSize = 1800 -- the size of the map in studs; note that players over 2000 studs away cannot be seen; setting this to values higher than 2000 will cause issues with the map
-
-
---// [END OF CUSTOM CONFIGURATION] \\--
-
-
-
-
 
 -- print if any members of modules are false
 for k, v in pairs(Modules) do
@@ -94,18 +93,18 @@ local ScreenElements = {
 	})
 }
 
-Welcome.Text = "Welcome to ShipNav."
+Modules.Welcome.Text = "Welcome to ShipNav."
 
 local RadarElements = {}
 
-function round(number: Number)
+function round(number: number)
 	return math.round(number * 1000)/1000
 end
 
-function chatted(plr, msg)
+function chatted(plr: string, msg: string)
 	local split = msg:split(" ")
 
-	if #split == 2 then	
+	if #split < 3 then	
 		local deviceName, newConfig = split[1], msg:sub(#split[1] + 2)
 
 		print(deviceName)
@@ -125,11 +124,7 @@ function chatted(plr, msg)
                     device:Configure{TriggerSwitchValue = tonumber(newConfig)}
 				elseif device.ClassName == "Polysilicon" then
 					device:Configure{PolysiliconMode = tonumber(newConfig)}
-                elseif device.ClassName == "Explosive" then
-                    device:Trigger()
-                elseif device.ClassName == "EnergyBomb" then
-                    device:Trigger()
-                elseif device.ClassName == "Warhead" then
+                elseif device.ClassName == "Explosive" or device.ClassName == "EnergyBomb" or device.ClassName == "Warhead" or device.ClassName == "Warhead" then
                     device:Trigger()
 				end
 
@@ -174,7 +169,7 @@ coroutine.resume(coroutine.create((function()
 		while wait(Settings.RadarUpdateTime) do
 			ScreenElements.RadarFrame.Rotation = Modules.Instrument:GetReading(8).Y
 			
-			for i, element in pairs(RadarElements) do
+			for _, element in pairs(RadarElements) do
 				element:Destroy()
 			end
 			
@@ -215,7 +210,7 @@ coroutine.resume(coroutine.create((function()
 	print(e)
 end)))
 
-Modules.Microphone:Connect("Chatted", function(plr, msg)
+Modules.Microphone:Connect("Chatted", function(plr: string, msg: string)
 	local s, e = pcall(chatted, plr ,msg)
 	if not s then print("ShipNav:" .. tostring(e)) end
 end)
