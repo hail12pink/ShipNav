@@ -1,6 +1,6 @@
 # ShipNav
 
-ShipNav is a customizable microcontroller ship systemthat intends to assist with the managing of a ship.
+ShipNav is a customizable microcontroller ship system that intends to assist with the managing of a ship.
 
 ## Dependencies
 ShipNav requires the following to properly operate:
