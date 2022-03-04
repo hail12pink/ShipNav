@@ -1,6 +1,6 @@
-local MAP_SIZE = 1800
-
 local Modules = {
+    HyperDrive = GetPartFromPort(1, "HyperDrive") or false;
+    Speaker = GetPartFromPort(1, "Speaker") or false;
 	Screen = GetPartFromPort(1, "Screen") or false;
 	Microphone = GetPartFromPort(1, "Microphone") or false;
 	LifeSensor = GetPartFromPort(1, "LifeSensor") or false;
@@ -9,11 +9,41 @@ local Modules = {
 	Anchor = GetPartFromPort(1, "Anchor") or false;
 }
 
+
+
+
+
+--// [CUSTOM CONFIGURATION] \\--
+
+--[[
+
+    place items on ports and set their names to what you want them to be configured by
+    if multiple items of the same class are on the same port, there will be issues
+
+    SUPPORTED:
+        Switch
+        TriggerSwitch
+        Polysilicon
+        Explosive
+        EnergyBomb
+        Warhead
+]]
+
 local Switches = {
-	Gyro = GetPartFromPort(1, "Gyro");
 	Headlights = GetPartFromPort(2, "Switch");
 	GyroSwitch = GetPartFromPort(3, "Switch");
 }
+
+local Settings = {}
+Settings.RadarUpdateTime = 0 -- how often the radar is updated in seconds
+Settings.MapSize = 1800 -- the size of the map in studs; note that players over 2000 studs away cannot be seen; setting this to values higher than 2000 will cause issues with the map
+
+
+--// [END OF CUSTOM CONFIGURATION] \\--
+
+
+
+
 
 -- print if any members of modules are false
 for k, v in pairs(Modules) do
@@ -91,8 +121,16 @@ function chatted(plr, msg)
 					end
 
 					device:Configure{SwitchValue = newConfig}
+                elseif device.ClassName == "TriggerSwitch" then
+                    device:Configure{TriggerSwitchValue = tonumber(newConfig)}
 				elseif device.ClassName == "Polysilicon" then
-					deviceName:Configure{PolysiliconMode = tonumber(newConfig)}
+					device:Configure{PolysiliconMode = tonumber(newConfig)}
+                elseif device.ClassName == "Explosive" then
+                    device:Trigger()
+                elseif device.ClassName == "EnergyBomb" then
+                    device:Trigger()
+                elseif device.ClassName == "Warhead" then
+                    device:Trigger()
 				end
 
 				return
@@ -133,7 +171,7 @@ end
 
 coroutine.resume(coroutine.create((function()
 	local s, e = pcall(function()			
-		while wait() do
+		while wait(Settings.RadarUpdateTime) do
 			ScreenElements.RadarFrame.Rotation = Modules.Instrument:GetReading(8).Y
 			
 			for i, element in pairs(RadarElements) do
@@ -157,14 +195,14 @@ coroutine.resume(coroutine.create((function()
 					element.BackgroundTransparency = 1
 					element.Image = "rbxassetid://7938846055"
 
-					element.Position = UDim2.fromScale(distVector2.X/MAP_SIZE, distVector2.Y/MAP_SIZE) + UDim2.fromScale(0.5, 0.5)
+					element.Position = UDim2.fromScale(distVector2.X/Settings.MapSize, distVector2.Y/Settings.MapSize) + UDim2.fromScale(0.5, 0.5)
 					element.ZIndex = 105
 					
-					if distNoHeight < MAP_SIZE/5 then -- closer than one third
+					if distNoHeight < Settings.MapSize/5 then -- closer than one third
 						element.ImageColor3 = Color3.new(1)
-					elseif distNoHeight < MAP_SIZE/6 * 2 then -- closer than two thirds
+					elseif distNoHeight < Settings.MapSize/6 * 2 then -- closer than two thirds
 						element.ImageColor3 = Color3.new(1, 1)
-					elseif distNoHeight > MAP_SIZE/5 * 2 then -- farther than two thirds
+					elseif distNoHeight > Settings.MapSize/5 * 2 then -- farther than two thirds
 						element.ImageColor3 = Color3.fromRGB(58, 193, 34)
 					end
 					
