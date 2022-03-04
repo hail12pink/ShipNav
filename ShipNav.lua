@@ -1,13 +1,12 @@
-
 local MAP_SIZE = 1800
 
 local Modules = {
-	Screen = GetPartFromPort(1, "Screen");
-	Microphone = GetPartFromPort(1, "Microphone");
-	LifeSensor = GetPartFromPort(1, "LifeSensor");
-	Instrument = GetPartFromPort(1, "Instrument");
-	Gyro = GetPartFromPort(1, "Gyro");
-	Anchor = GetPartFromPort(1, "Anchor")
+	Screen = GetPartFromPort(1, "Screen") or false;
+	Microphone = GetPartFromPort(1, "Microphone") or false;
+	LifeSensor = GetPartFromPort(1, "LifeSensor") or false;
+	Instrument = GetPartFromPort(1, "Instrument") or false;
+	Gyro = GetPartFromPort(1, "Gyro") or false;
+	Anchor = GetPartFromPort(1, "Anchor") or false;
 }
 
 local Switches = {
@@ -15,6 +14,23 @@ local Switches = {
 	Headlights = GetPartFromPort(2, "Switch");
 	GyroSwitch = GetPartFromPort(3, "Switch");
 }
+
+-- print if any members of modules are false
+for k, v in pairs(Modules) do
+    if v == false then
+        print("ShipNav: " .. k .. " not found.")
+    end
+end
+
+if not Modules.Screen then -- (i love you github copilot)
+    print("ShipNav: Screen not found. Exiting.")
+
+    return
+elseif not Modules.Microphone then
+    print("ShipNav: Microphone not found. Exiting.")
+
+    return
+end
 
 Modules.Screen:ClearElements()
 
@@ -48,10 +64,9 @@ local ScreenElements = {
 	})
 }
 
-local RadarElements = {}
+Welcome.Text = "Welcome to ShipNav."
 
-ScreenElements.Welcome.ZIndex = 99
-ScreenElements.RadarFrame.ZIndex = 101
+local RadarElements = {}
 
 function round(number: Number)
 	return math.round(number * 1000)/1000
@@ -97,14 +112,22 @@ function chatted(plr, msg)
 	elseif msg == "home" then
 		ScreenElements.RadarFrame.ZIndex = 99
 		ScreenElements.Welcome.ZIndex = 101
+
+        print("Home")
 	elseif msg == "radar" then
 		ScreenElements.Welcome.ZIndex = 99
 		ScreenElements.RadarFrame.ZIndex = 101
+
+        print("Radar is now enabled.")
 	elseif msg == "detwar" then
 		local Warhead = GetPartFromPort(69, "Warhead")
 		Warhead:Trigger()
+
+        print("ShipNav: Detonation successful.")
 	elseif msg == "anchor" then
 		Modules.Anchor:Trigger()
+
+        print("ShipNav: Anchor successful.")
 	end
 end
 
@@ -156,5 +179,5 @@ end)))
 
 Modules.Microphone:Connect("Chatted", function(plr, msg)
 	local s, e = pcall(chatted, plr ,msg)
-	if not s then print(e) end
+	if not s then print("ShipNav:" .. tostring(e)) end
 end)
