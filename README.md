@@ -42,15 +42,13 @@ Settings.MapSize - The size of the map in studs; note that players over 2000 stu
 ## Attachments
 Attachments are a way of easily configuring/triggering supported parts via saying them in chat.
 
-
-Supported Parts:
+##### ___Note: You CANNOT have multiple parts of the same type on the same port.___
+### Supported Parts:
 * Switch/TriggerSwitch/DeleteSwitch/Valve/Hatch
 * Explosive/EnergyBomb/Warhead
 * Polysilicon
 
-__Note: You CANNOT have multiple parts of the same type on the same port. This will cause issues__
-
-Example:
+#### Example of `Settings.Attachments`:
 ```lua
 Settings.Attachments = {
 	Headlights = GetPartFromPort(2, "Switch");
@@ -59,6 +57,17 @@ Settings.Attachments = {
 	Warhead = GetPartFromPort(2, "Warhead");
 }
 ```
+
+### Configuring/Triggering
+Attachments can be configured/triggered by saying the prefix, followed by their names into chat. (The default prefix is `;`)
+
+#### Examples:
+* `"-Headlights true"`
+* `"-EngineSwitch on`
+* `"-Anchor"`
+* `"-Warhead"`
+
+##### (For switches, either "on", "off", "true", or "false" is acceptable)
 
 ## Contributing
 To contribute, open a [pull request](https://github.com/hail12pink/ShipNav/pulls)
