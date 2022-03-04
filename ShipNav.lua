@@ -4,29 +4,28 @@
     Dependencies:
         Screen
         Microphone
+        Disk [optional, but recommended]
     Information:
-        The purpose of this file is to provide an easy-to-use interface for controlling a ship
-]]
-
-
---[[
-place items on ports and set their names to what you want them to be configured by
-if multiple items of the same class are on the same port, there will be issues
-
-SUPPORTED CLASSES:
-    Switch [any]
-    Polysilicon
-    Explosive [any]
+        The purpose of this file is to provide an easy-to-use, free, and configurable interface for controlling a ship
+    Documentation:
+        Commands:
+            "scan" - Prints nearby players' names and distances from the ship into the F9 console
+            "radar" - Initiates the radar screen
+            "home" - Teleports the ship to the configured home base, if applicable [Settings.HomeBase]
 ]]--
 
 local Settings = {}
 
-Settings.RadarUpdateTime = 0 -- how often the radar is updated in seconds
-Settings.MapSize = 1800 -- the size of the map in studs; note that players over 2000 studs away cannot be seen; setting this to values higher than 2000 will cause issues with the map
+Settings.VesselName = "ShipNav Vessel" -- The name of the ship.
+Settings.AllowPublicGPS = true -- Whether the ship will publicly share its position and name. This is used for displaying ships onto radars.
 
-local Switches = {
+Settings.RadarUpdateTime = 0 -- Determines often the radar is updated in seconds.
+Settings.MapSize = 1800 -- The size of the map in studs; note that players over 2000 studs away cannot be seen; setting this to values higher than 2000 will cause issues with the map.
+Settings.ConfigPrefix = "-" -- The prefix used for configuring the ship (e.g. "-Headlights false" or "-EngineSwitch true").
+Settings.HomeBase = "0, 0, 0, 0" -- The coordinates of the home base, used by the "home command". Set this to false to disable this feature.
+
+Settings.Attachments = {
 	Headlights = GetPartFromPort(2, "Switch");
-	GyroSwitch = GetPartFromPort(3, "Switch");
 }
 
 
@@ -42,6 +41,7 @@ local Modules = {
 	Instrument = GetPartFromPort(1, "Instrument") or false;
 	Gyro = GetPartFromPort(1, "Gyro") or false;
 	Anchor = GetPartFromPort(1, "Anchor") or false;
+    Disk = GetPartFromPort(1,"Disk") or false;
 }
 
 -- print if any members of modules are false
@@ -96,23 +96,23 @@ local ScreenElements = {
 Modules.Welcome.Text = "Welcome to ShipNav."
 
 local RadarElements = {}
+local NowPlaying = nil
 
 function round(number: number)
 	return math.round(number * 1000)/1000
 end
 
 function chatted(plr: string, msg: string)
+    local msgL = msg:lower()
+
 	local split = msg:split(" ")
 
-	if #split < 3 then	
-		local deviceName, newConfig = split[1], msg:sub(#split[1] + 2)
+	if #split < 3 and msg:sub(1, #Settings.ConfigPrefix) == Settings.ConfigPrefix then	
+		local deviceName, newConfig = split[1]:sub(2), msg:sub(#split[1] + 2)
 
-		print(deviceName)
-		print(newConfig)
-
-		for name, device in pairs(Switches) do
+		for name, device in pairs(Settings.Attachments) do
 			if name:lower() == deviceName:lower() then
-				if device.ClassName == "Switch" then
+				if device.ClassName == "Switch" or device.ClassName == "TriggerSwitch" or device.ClassName == "Hatch" or device.Name == "Valve" or (device.Name == "Anchor" and newConfig) then
 					if newConfig:lower() == "true" or newConfig:lower() == "on" then
 						newConfig = true
 					elseif newConfig:lower() == "false" or newConfig:lower() == "off" then
@@ -120,11 +120,9 @@ function chatted(plr: string, msg: string)
 					end
 
 					device:Configure{SwitchValue = newConfig}
-                elseif device.ClassName == "TriggerSwitch" then
-                    device:Configure{TriggerSwitchValue = tonumber(newConfig)}
 				elseif device.ClassName == "Polysilicon" then
 					device:Configure{PolysiliconMode = tonumber(newConfig)}
-                elseif device.ClassName == "Explosive" or device.ClassName == "EnergyBomb" or device.ClassName == "Warhead" or device.ClassName == "Warhead" then
+                elseif device.ClassName == "Explosive" or device.ClassName == "EnergyBomb" or device.ClassName == "Warhead" or device.ClassName == "Anchor" or device.ClassName == "DeleteSwitch" then
                     device:Trigger()
 				end
 
@@ -133,7 +131,7 @@ function chatted(plr: string, msg: string)
 				continue
 			end
 		end
-	elseif msg == "scan" then
+	elseif msgL == "scan" then
 		local currentPosition = Modules.Instrument:GetReading(6)
 		local scanInformation = Modules.LifeSensor:GetReading()
 
@@ -142,25 +140,50 @@ function chatted(plr: string, msg: string)
 
 			print("{ " .. playerName .. " ; " .. math.round(dist*100)/100 .. " }")
 		end
-	elseif msg == "home" then
+    elseif split[1] == "play" then
+        local soundID = "rbxassetid://" .. tonumber(split[2])
+        local sound = Modules.Speaker:PlaySound(soundID)
+
+        sound:Play()
+
+        print("ShipNav: Playing sound " .. soundID)
+    elseif msgL[1] == "stop" then
+        if NowPlaying then
+            NowPlaying:Stop()
+            print("ShipNav: Stopped.")
+        else
+            print("ShipNav: No sound is currently playing.")
+        end
+    elseif msgL == "home" then
+        if not Settings.HomeBase then
+            print("ShipNav: No home is configured.")
+        elseif not Modules.HyperDrive then
+            print("ShipNav: HyperDrive not found.")
+        end
+
+        local OldCoordinates = Modules.HyperDrive.Coordinates
+
+        if Modules.Anchor then
+            Modules.Anchor.Anchored = false
+        end
+
+        Modules.HyperDrive.Coordinates = Settings.HomeBase
+        print("ShipNav: Destination set to home.")
+        Modules.HyperDrive:Trigger()
+        print("ShipNav: HyperDrive initiated..")
+        Modules.HyperDrive.Coordinates = OldCoordinates
+        print("ShipNav: HyperDrive coordinates reset.")
+    end
+	elseif msgL == "main" then
 		ScreenElements.RadarFrame.ZIndex = 99
 		ScreenElements.Welcome.ZIndex = 101
 
-        print("Home")
-	elseif msg == "radar" then
+        print("ShipNav: Main screen.")
+	elseif msgL == "radar" then
 		ScreenElements.Welcome.ZIndex = 99
 		ScreenElements.RadarFrame.ZIndex = 101
 
-        print("Radar is now enabled.")
-	elseif msg == "detwar" then
-		local Warhead = GetPartFromPort(69, "Warhead")
-		Warhead:Trigger()
-
-        print("ShipNav: Detonation successful.")
-	elseif msg == "anchor" then
-		Modules.Anchor:Trigger()
-
-        print("ShipNav: Anchor successful.")
+        print("ShipNav: Radar is now enabled.")
 	end
 end
 
