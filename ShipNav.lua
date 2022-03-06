@@ -94,7 +94,7 @@ local ScreenElements = {
 	})
 }
 
-Modules.Welcome.Text = "Welcome to ShipNav."
+ScreenElements.Welcome.Text = "Welcome to ShipNav."
 
 local RadarElements = {}
 local NowPlaying = nil
