@@ -31,6 +31,7 @@ Settings.Attachments = {
 
 --// [ END OF  CONFIGURATION ] \\--
 
+print("no syntax errors!")
 
 local Modules = {
     HyperDrive = GetPartFromPort(1, "HyperDrive") or false;
