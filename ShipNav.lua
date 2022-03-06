@@ -99,7 +99,7 @@ Modules.Welcome.Text = "Welcome to ShipNav."
 local RadarElements = {}
 local NowPlaying = nil
 
-function round(number: number)
+function round(number)
 	return math.round(number * 1000)/1000
 end
 
