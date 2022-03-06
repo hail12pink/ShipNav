@@ -173,7 +173,6 @@ function chatted(plr: string, msg: string)
         print("ShipNav: HyperDrive initiated..")
         Modules.HyperDrive.Coordinates = OldCoordinates
         print("ShipNav: HyperDrive coordinates reset.")
-    end
 	elseif msgL == "main" then
 		ScreenElements.RadarFrame.ZIndex = 99
 		ScreenElements.Welcome.ZIndex = 101
