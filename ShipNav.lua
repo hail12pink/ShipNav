@@ -25,7 +25,8 @@ Settings.ConfigPrefix = "-" -- The prefix used for configuring the ship (e.g. "-
 Settings.HomeBase = "0, 0, 0, 0" -- The coordinates of the home base, used by the "home command". Set this to false to disable this feature.
 
 Settings.Attachments = {
-	Headlights = GetPartFromPort(2, "Switch");
+	Anchor = GetPartFromPort(1, "Anchor");
+	Lights = GetPartFromPort(2, "Switch")
 }
 
 
@@ -41,7 +42,6 @@ local Modules = {
 	LifeSensor = GetPartFromPort(1, "LifeSensor") or false;
 	Instrument = GetPartFromPort(1, "Instrument") or false;
 	Gyro = GetPartFromPort(1, "Gyro") or false;
-	Anchor = GetPartFromPort(1, "Anchor") or false;
     Disk = GetPartFromPort(1,"Disk") or false;
 }
 
@@ -76,7 +76,7 @@ local ScreenElements = {
 		BackgroundColor3 = Color3.new();
 		AnchorPoint = Vector2.new(0.5, 0.5);
 
-		Text = "Welcome.";
+		Text = "Loading.";
 		TextSize = 20;
 		TextColor3 = Color3.new(1, 1, 1);
 
@@ -91,15 +91,25 @@ local ScreenElements = {
 		Image = "rbxassetid://19619159";
 
 		ZIndex = 99
+	});
+	Stats = Modules.Screen:CreateElement("Frame", {
+		Position = UDim2.fromScale(0.5, 0.5);
+		Size = UDim2.fromScale(1, 1);
+		BackgroundColor3 = Color3.new(0, 0, 0);
+		AnchorPoint = Vector2.new(0.5, 0.5);
+		
+		ZIndex = 99
 	})
 }
+
+task.wait(2)
 
 ScreenElements.Welcome.Text = "Welcome to ShipNav."
 
 local RadarElements = {}
 local NowPlaying = nil
 
-function round(number)
+function round(number: number)
 	return math.round(number * 1000)/1000
 end
 
@@ -176,14 +186,22 @@ function chatted(plr: string, msg: string)
         print("ShipNav: HyperDrive coordinates reset.")
 	elseif msgL == "main" then
 		ScreenElements.RadarFrame.ZIndex = 99
+		ScreenElements.Stats.ZIndex = 99
 		ScreenElements.Welcome.ZIndex = 101
 
         print("ShipNav: Main screen.")
 	elseif msgL == "radar" then
 		ScreenElements.Welcome.ZIndex = 99
+		ScreenElements.Stats.ZIndex = 99
 		ScreenElements.RadarFrame.ZIndex = 101
 
         print("ShipNav: Radar is now enabled.")
+	elseif msgL == "stats" then
+		ScreenElements.Welcome.ZIndex = 99
+		ScreenElements.RadarFrame.ZIndex = 99
+		ScreenElements.Stats.ZIndex = 101
+
+		print("ShipNav: Now displaying stats.")
 	end
 end
 
@@ -225,7 +243,9 @@ coroutine.resume(coroutine.create((function()
 					end
 					
 					table.insert(RadarElements, element)
-				end					
+				end
+			elseif ScreenElements.Stats.ZIndex > 100 then
+				print(Modules.Instrument:GetReading(8))
 			end
 		end
 	end)
