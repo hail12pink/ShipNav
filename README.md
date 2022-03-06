@@ -16,17 +16,15 @@ However, for full functionality, it requires the following:
 * Gyro (Targeting system, detection system)
 * Anchor ("Anchor" command)
 
-
 ## Installation
-
 * Connect all modules with an EthernetCable and Port.
 * Power the microcontroller and its connected parts.
-* Paste the code of the most recent [release](https://github.com/hail12pink/ShipNav/releases/) into the microcontroller
+* Configure the microcontroller's code to "https://raw.githubusercontent.com/hail12pink/ShipNav/main/ShipNav.lua"
 * Turn on the microcontroller via a mode 0 polysilicon
 * Attach a transformer to the microcontroller and power it to automatically start the microcontroller when the server starts (optional)
 ## Settings
 ```
-Settings.VesselName - The name of the ship.
+Settings.VesselName - [incomplete] The name of the ship.
 Settings.AllowPublicGPS - [incomplete] Whether the ship will publicly share its position and name. This is used for displaying ships onto radars. (Does not share coordinates)
 Settings.ConfigPrefix - The prefix used for configuring attachments (e.g. "-Headlights false" or "-EngineSwitch true").
 Settings.HomeBase - The coordinates of the home base, used by the "home command". Set this to false to disable this feature.
@@ -70,7 +68,7 @@ Attachments can be configured/triggered by saying the prefix, followed by their 
 * `"-Anchor"`
 * `"-Warhead"`
 
-##### (For switches, either "on", "off", "true", or "false" is acceptable)
+##### (For switches and anchors, "on", "off", "true", and "false" are all acceptable)
 
 ## Contributing
 To contribute, open a [pull request](https://github.com/hail12pink/ShipNav/pulls)
